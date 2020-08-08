@@ -17,6 +17,7 @@ Pedestrian segmentation tensorflow2  U-Net model.
 <p style="line-height:70%">
 <font size="2" face="Consolas">
 <br/>
+```
 ........................#......<br/>
 ...........#########....#......<br/>
 ........###.........##..#......<br/>
@@ -56,5 +57,6 @@ Pedestrian segmentation tensorflow2  U-Net model.
 .....#..................#.....#<br/>
 .....#..................#......<br/>
 .....#..................#......<br/>
+```
 </font>
 </p>
