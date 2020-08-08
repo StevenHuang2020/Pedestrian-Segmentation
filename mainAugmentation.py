@@ -8,6 +8,10 @@ from modules.folder.folder_file import createPath,getFileName
 from genImageBoxLabel import getFileCoordinates,writeToAnnotFile,writeCordToAnnotFile
 from genImageBoxLabel import loadImg,getImgHW,getImagChannel,listFile,getImgAnnotFile
 
+def loadImg(file,mode=cv2.IMREAD_COLOR):
+    #mode = cv2.IMREAD_COLOR cv2.IMREAD_GRAYSCALE cv2.IMREAD_UNCHANGED
+    return cv2.imread(file,mode)
+
 def writeImg(img,filePath):
     cv2.imwrite(filePath,img)
     
@@ -29,11 +33,28 @@ def rectangleImg(img,startPt,stopPt):
     image = cv2.rectangle(img, startPt, stopPt, color, thickness) 
     return image
  
-def resizeImg(img,ratio):
+def grayImg(img):
+    if getImagChannel(img) == 3:
+        return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return img
+
+def getImagChannel(img):
+    if img.ndim == 3: #color r g b channel
+        return 3
+    return 1  #only one channel
+
+def getImgHW(img):
+    return img.shape[0],img.shape[1]  
+
+def resizeImg(img,newH,newW):
+    return cv2.resize(img, (newW,newH), interpolation=cv2.INTER_CUBIC) #INTER_CUBIC INTER_NEAREST INTER_LINEAR INTER_AREA
+
+def resizeRtImg(img,ratio):
     #ratio = float(ratio)
     h,w = img.shape[0],img.shape[1]
     reH,reW = round(h*ratio), round(w*ratio)
-    return cv2.resize(img, (reW,reH), interpolation=cv2.INTER_CUBIC) #INTER_CUBIC INTER_NEAREST INTER_LINEAR INTER_AREA
+    return resizeImg(img,reH,reW)
+    #return cv2.resize(img, (reW,reH), interpolation=cv2.INTER_CUBIC) #INTER_CUBIC INTER_NEAREST INTER_LINEAR INTER_AREA
 
 def flipImg(img):
     H, W = getImgHW(img)
@@ -111,11 +132,11 @@ def generateMaskByScaling(imgPath,maskImgPath,dstImgPath,dstMaskImgPath,rStart=0
         ratios = np.linspace(rStart,rStop,N)    
         for ratio in ratios:   
             #print('ratio=',ratio)  
-            rImg = resizeImg(img,ratio)
+            rImg = resizeRtImg(img,ratio)
             newImgFile = name + '_scale_' + str(ratio)
             writeImg(rImg,dstImgPath + '\\' + newImgFile + '.png')
             
-            rMaskImg = resizeImg(maskImg,ratio)
+            rMaskImg = resizeRtImg(maskImg,ratio)
             newMaskImgFile = newImgFile + '_mask'
             writeImg(rMaskImg,dstMaskImgPath + '\\' + newMaskImgFile + '.png')
         

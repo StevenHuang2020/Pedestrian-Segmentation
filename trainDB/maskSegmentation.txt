@@ -1,3 +1,4 @@
+augmentate to 6968samples 
 1)mainAugmentation.py
 1.handleMaskLabel fuc
 change all pedestrains mask images label from(1,2,3,....) to 1
