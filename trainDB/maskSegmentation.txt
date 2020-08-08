@@ -1,0 +1,17 @@
+1)mainAugmentation.py
+1.handleMaskLabel fuc
+change all pedestrains mask images label from(1,2,3,....) to 1
+
+2.main()
+to generate new images and maskiamges to argumentation
+
+
+2)splitImageDataset.py
+1.collectImageDataset fuc
+collect all argumentated iamges to train folder and generate trainList.list 
+
+3)makeImagesDb.py
+1.saveDataset 
+save all training iamge to db(numpy format
+2.loadDataset
+load to tranning
