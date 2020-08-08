@@ -4,12 +4,12 @@ Pedestrian segmentation tensorflow2  U-Net model.
 
 ## 📝 Table of Contents
 - [PennFudanAugmentation](#PennFudanAugmentation)
-- [Trainning](#Trainning U-Net Model)
-- [SegmentationEffect](#Segmentation Effect)
+- [Trainning](#Trainning)
+- [SegmentationEffect](#SegmentationEffect)
 
 
 ## PennFudanAugmentation
 
-## Trainning U-Net Model
+## Trainning
 
-## Segmentation Effect
+## SegmentationEffect
