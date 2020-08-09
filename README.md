@@ -11,5 +11,7 @@ Pedestrian segmentation tensorflow2  U-Net model.
 ## PennFudanAugmentation
 
 ## Trainning
+<img src="images/Figure_1.png" width="320" height="240" />
+<img src="images/Figure_2.png" width="320" height="240" />
 
 ## SegmentationEffect

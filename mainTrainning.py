@@ -125,10 +125,13 @@ def argCmdParse():
 
     return parser.parse_args()
 
+def loadModel(modelName):
+    return ks.models.load_model(modelName,custom_objects={'dice_coef_loss': dice_coef_loss})
+
 def main():
     arg = argCmdParse()
     
-    epoch = 100
+    epoch = 20
     newModel = False
     if arg.epoch:
         epoch = int(arg.epoch)
@@ -144,8 +147,8 @@ def main():
     if newModel:
         model = unet()
     else: #continue trainning
-        model = ks.models.load_model(modelName,custom_objects={'dice_coef_loss': dice_coef_loss})
-    
+        model = loadModel(modelName) #ks.models.load_model(modelName,custom_objects={'dice_coef_loss': dice_coef_loss})
+
     log_dir = r"logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = ks.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     checkpoint_filepath = r'./checkpoint'

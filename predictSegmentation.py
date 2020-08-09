@@ -7,6 +7,7 @@ import numpy as np
 import argparse
 from ImageBase import *
 from mainImagePlot import plotImagList
+from mainTrainning import loadModel
 #--------------------------------------------------------------------------------------
 #usgae: python predictSegmentation.py -s .\res\PennFudanPed\PNGImages\FudanPed00001.png
 #--------------------------------------------------------------------------------------
@@ -18,11 +19,12 @@ def argCmdParse():
     
     return parser.parse_args()
 
-def preditImg(img, modelName = r'.\weights\old\trainPedSegmentation.h5'): 
-    model = ks.models.load_model(modelName)
+def preditImg(img, modelName = r'.\weights\trainPedSegmentation.h5'): 
+    model = loadModel(modelName) #ks.models.load_model(modelName,custom_objects={'dice_coef_loss': dice_coef_loss})
+    #model.summary()
     print(img.shape)
     
-    x = img.reshape((-1,img.shape[0],img.shape[1],3))
+    x = img.reshape((-1,img.shape[0],img.shape[1],1))
     print(x.shape)
     mask = model.predict(x)
     
@@ -46,19 +48,21 @@ def demonstratePrediction(file):
     plotImagList(ls, nameList,title='Segmentation prediction')
     
 def comparePredict():
-    img = loadImg(r'.\res\PennFudanPed\newImages\trainImages\trainPNGImages\FudanPed00001_scale_0.2.png')
-    img = resizeImg(img,256,256)
-    gtMaskImg = loadImg(r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_scale_0.2_mask.png')
-    gtMaskImg = resizeImg(gtMaskImg,256,256)
-    gtMaskImg = gtMaskImg[:,:,0]
-    
+    img = loadGrayImg(r'.\res\PennFudanPed\newImages\trainImages\trainPNGImage\FudanPed00001_scale_0.2.png')
+    gtMaskImg = loadGrayImg(r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_scale_0.2_mask.png')
+    infoImg(img)
+    infoImg(gtMaskImg)
+
     predMaskImg = preditImg(img)
-    predMaskImg = np.where(predMaskImg>0.5,1,0)
+    predMaskImg = np.where(predMaskImg>0.5,1,0).reshape((256,256))
     
     print('groundTrue=',gtMaskImg.shape, np.unique(gtMaskImg), np.sum(gtMaskImg))
     print('predMaskImg=',predMaskImg.shape, np.unique(predMaskImg), np.sum(predMaskImg))
     
-    print('eqaul=',np.sum(np.where(gtMaskImg == 1 and gtMaskImg==predMaskImg)))
+    comparison = np.where(gtMaskImg[np.where(gtMaskImg==1)] == predMaskImg)
+    #comparison = np.where(gtMaskImg==1 and gtMaskImg == predMaskImg)
+    print(comparison)
+    print('eqaul=',len(comparison[0]))
     
 def main():
     arg = argCmdParse()    
@@ -70,4 +74,5 @@ def main():
     comparePredict()
     
 if __name__=='__main__':
-    main()
+    #main()
+    
