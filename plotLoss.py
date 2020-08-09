@@ -17,22 +17,25 @@ def getLoss(log_file,startIter=0,stopIter=None):
         accuracy=[]
         val_loss = []
         val_accuracy = []
+        epoch = 0
         for line in lines:
             trainIterRes = line.split(' ')
-            epoch = 0
-            if trainIterRes[0] == 'Epoch' and trainIterRes[1][-1:]!=':':
-                #print(line)
-                str = trainIterRes[1]
-                epoch = int(str[:str.find('/')])
-                #print(line,' epoch=',epoch)
-                if(epoch<startIter):
-                    continue       
-                if stopIter and  epoch > stopIter:
-                    break
+            # epoch = 0
+            # if trainIterRes[0] == 'Epoch' and trainIterRes[1][-1:]!=':':
+            #     #print(line)
+            #     str = trainIterRes[1]
+            #     epoch = int(str[:str.find('/')])
+            #     #print(line,' epoch=',epoch)
+            #     if(epoch<startIter):
+            #         continue       
+            #     if stopIter and  epoch > stopIter:
+            #         break
             
-                iters.append(epoch)
+            #     iters.append(epoch)
            
             if trainIterRes[0] == '41/41' and trainIterRes[3] != 'ETA:':
+                epoch+=1
+                iters.append(epoch)
                 #print(line)
                 #print('loss,acc=',trainIterRes[7],trainIterRes[10],'val_loss,val_acc=',trainIterRes[13],trainIterRes[16])
                 loss.append(float(trainIterRes[7]))
