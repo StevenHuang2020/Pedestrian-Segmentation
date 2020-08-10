@@ -46,14 +46,11 @@ def processMaskImg(img,backColor=0):
     newImg = np.zeros_like(img)
     for i in range(H):
         for j in range(W):
-            if backColor is None:
-                newImg[i,j,:] = colors[img[i,j,0]]
+            #newImg[i,j,:] = backColor
+            if img[i,j,0] == 0:
+                newImg[i,j,:] = backColor
             else:
-                #newImg[i,j,:] = backColor
-                if img[i,j,0] == 0:
-                    newImg[i,j,:] = backColor
-                else:
-                    newImg[i,j,:] = colors[img[i,j,0]]
+                newImg[i,j,:] = colors[img[i,j,0]]
     return newImg
     
 def expandImageTo3chan(img):
@@ -71,10 +68,7 @@ def maskToOrignimalImg(img,maskImg):
     mask = maskImg
     if img.shape != maskImg.shape:
         mask = expandImageTo3chan(maskImg)
-    
-    # print('img.shape,mask.shape=',img.shape,mask.shape)
-    # infoImg(img)
-    # infoImg(mask)
+
     return cv2.addWeighted(img, 1.0, mask, 0.8, 0)
 
     H,W = getImgHW(img)
@@ -90,34 +84,34 @@ def maskToOrignimalImg(img,maskImg):
             
     return newImg
     
-def demonstratePrediction(file,gtMaskFile):
-    img = loadImg(file)
-    maskImg = loadImg(gtMaskFile)
-    img = resizeImg(img,256,256)
-    maskImg = resizeImg(maskImg,256,256)
-    
+def getPredictionMaskImg(img):
     predMaskImg = preditImg(grayImg(img))
     binPredMaskImg = np.where(predMaskImg>0.5,1,0)
     binPredMaskImg = binPredMaskImg.astype(np.uint8)
-    #print('img,GTMask,predMask=',img.shape,maskImg.shape,binPredMaskImg.shape)
-    c = np.unique(binPredMaskImg)
-    #print('c=',c)
-
-    maskImg = processMaskImg(maskImg)
-    #print('1 img.shape,binPredMaskImg.shape=',img.shape,binPredMaskImg.shape)
-
+    
     binPredMaskImg = expandImageTo3chan(binPredMaskImg)
     binPredMaskImg = processMaskImg(binPredMaskImg)
-    
     binPredMaskImg = binPredMaskImg.astype(np.uint8)
-    mImg = maskToOrignimalImg(img,maskImg)
-    pImg = maskToOrignimalImg(img,binPredMaskImg)
+    return maskToOrignimalImg(img,binPredMaskImg)
+
+def demonstratePrediction(file,gtMaskFile=None):
+    img = loadImg(file)
+    img = resizeImg(img,256,256)
     
+    pImg = getPredictionMaskImg(img)
     
+    if gtMaskFile is not None:
+        maskImg = loadImg(gtMaskFile)
+        maskImg = resizeImg(maskImg,256,256)
+        maskImg = processMaskImg(maskImg)
+        mImg = maskToOrignimalImg(img,maskImg)
+    
+
     ls,nameList = [],[]
     ls.append(img),nameList.append('Original')
-    ls.append(maskImg),nameList.append('maskImg')
-    ls.append(mImg),nameList.append('GT Img')
+    if gtMaskFile is not None:
+        ls.append(maskImg),nameList.append('maskImg')
+        ls.append(mImg),nameList.append('GT Img')
     ls.append(pImg),nameList.append('predict Img')
 
     plotImagList(ls, nameList,gray=True,title='Segmentation prediction',showticks=False)
@@ -186,7 +180,12 @@ def main():
         maskFile=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_17_104_557_490_mask.png'
         file=r'.\res\PennFudanPed\PNGImages\FudanPed00012.png'
         maskFile=r'.\res\PennFudanPed\PedMasks\FudanPed00012_mask.png'
-        demonstratePrediction(file,maskFile)
+        
+        #demonstratePrediction(file,maskFile)
+
+        file=r'.\res\others\2.jpg'
+        demonstratePrediction(file)
+        
     
 if __name__=='__main__':
     main()
