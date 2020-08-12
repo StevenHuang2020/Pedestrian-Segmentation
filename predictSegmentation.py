@@ -133,8 +133,10 @@ def demonstrateGrayPrediction(file):
     plotImagList(ls, nameList,gray=True,title='Segmentation prediction')
     
 def comparePredict():
-    img = loadGrayImg(r'.\res\PennFudanPed\newImages\trainImages\trainPNGImage\FudanPed00001_scale_0.2.png')
-    gtMaskImg = loadGrayImg(r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_scale_0.2_mask.png')
+    file = r'.\res\PennFudanPed\newImages\trainImages\trainPNGImage\FudanPed00001_scale_0.2.png'
+    mask = r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_scale_0.2_mask.png'
+    img = loadGrayImg(file)
+    gtMaskImg = loadGrayImg(mask)
     infoImg(img)
     infoImg(gtMaskImg)
 

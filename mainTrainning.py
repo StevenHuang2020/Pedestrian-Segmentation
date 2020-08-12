@@ -25,7 +25,7 @@ def prepareData():
     print('Y.shape=',Y.shape)
     
     X = X.reshape(X.shape[0], img_rows, img_cols, 1)
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.3)
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, shuffle=False) #insure every time has same train and test dataset.
         
     print('X_train.shape = ', x_train.shape)
     print('y_train.shape = ', y_train.shape)
