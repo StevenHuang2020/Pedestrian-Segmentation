@@ -4,20 +4,13 @@
 import sys
 import cv2
 import numpy as np 
-from modules.folder.folder_file import createPath,getFileName
+from modules.folder.folder_file import createPath,getFileName,deleteFolder,copyFile
 from genImageBoxLabel import getFileCoordinates,writeToAnnotFile,writeCordToAnnotFile
 from genImageBoxLabel import loadImg,getImgHW,getImagChannel,listFile,getImgAnnotFile
+from imageColorAugPed import ImageColorAug
+from commonImage import *
 
-def loadImg(file,mode=cv2.IMREAD_COLOR):
-    #mode = cv2.IMREAD_COLOR cv2.IMREAD_GRAYSCALE cv2.IMREAD_UNCHANGED
-    return cv2.imread(file,mode)
-
-def writeImg(img,filePath):
-    cv2.imwrite(filePath,img)
     
-def clipImg(img,startPt,stopPt):
-    return img[startPt[1]:stopPt[1], startPt[0]:stopPt[0]]
-
 def clipImgCoordinate(img,clipCoordinate,coordinates):
     clipImg = img[clipCoordinate[1]:clipCoordinate[3], clipCoordinate[0]:clipCoordinate[2]]
     
@@ -26,28 +19,6 @@ def clipImgCoordinate(img,clipCoordinate,coordinates):
         Xmin,Ymin,Xmax,Ymax = cod
         newCoordinates.append((Xmin-clipCoordinate[0],Ymin-clipCoordinate[1],Xmax-clipCoordinate[0],Ymax-clipCoordinate[1]))
     return clipImg,newCoordinates
-
-def rectangleImg(img,startPt,stopPt):
-    color = (0, 0, 255) 
-    thickness=2
-    image = cv2.rectangle(img, startPt, stopPt, color, thickness) 
-    return image
- 
-def grayImg(img):
-    if getImagChannel(img) == 3:
-        return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    return img
-
-def getImagChannel(img):
-    if img.ndim == 3: #color r g b channel
-        return 3
-    return 1  #only one channel
-
-def getImgHW(img):
-    return img.shape[0],img.shape[1]  
-
-def resizeImg(img,newH,newW):
-    return cv2.resize(img, (newW,newH), interpolation=cv2.INTER_CUBIC) #INTER_CUBIC INTER_NEAREST INTER_LINEAR INTER_AREA
 
 def resizeRtImg(img,ratio):
     #ratio = float(ratio)
@@ -170,25 +141,65 @@ def handleMaskLabel(maskImgPath): #multity labels all change to 1
         #print(len(c),c)
         writeImg(img,i)
 
+def colorAugmentation(imgPath,maskImgPath,annotPath):
+    print('Color augmentation start...')
+    print('imgPath=',imgPath)
+    print('maskImgPath=',maskImgPath)
     
+    tmpPath = r'.\res\PennFudanPed\tmp'
+    
+    for i in listFile(imgPath):
+        deleteFolder(tmpPath)
+        createPath(tmpPath)
+    
+        imgFile = getFileName(i)
+        #img = loadImg(i)
+        #H,W = getImgHW(img)
+        name = imgFile[:imgFile.rfind('.')]
+        maskImgFile = maskImgPath + '\\' + name + '_mask' + '.png'
+        maskImg = loadImg(maskImgFile)
+        
+        fAnnot = getImgAnnotFile(annotPath,i)
+
+        aug = ImageColorAug(i,tmpPath)
+        aug.augmentAll(N=6)
+        
+        def copyNewFile(path):
+            print('start to copy...')
+            for f in listFile(path):
+                name_ = getFileName(f)
+                newName = name_[:name_.rfind('.')]
+                newFile = imgPath + '\\' + newName + '.png'
+                newMaskFile = maskImgPath + '\\' + newName + '_mask' + '.png'
+                newAnnoFile = annotPath + '\\' + newName + '.txt'
+                print(newFile,newMaskFile)
+                copyFile(f,newFile)
+                copyFile(fAnnot,newAnnoFile)
+                writeImg(maskImg,newMaskFile)
+                           
+        copyNewFile(tmpPath)
+             
+
 def main():
     base = r'.\res\PennFudanPed\\'
     annotPath = base + 'Annotation'
     imgPath = base + 'PNGImages'
     maskImgPath = base + 'PedMasks'
     
-    #handleMaskLabel(maskImgPath)
+    
+    #colorAugmentation(imgPath,maskImgPath,annotPath)
+    #return 
 
     newImgPath = base + 'newImages'
     
     dstImgPath = newImgPath + r'\newMaskScaling\\'
     dstMaskImgPath = newImgPath + r'\newMaskScalingMask\\'
     #print(dstImgPath,dstMaskImgPath)
-    generateMaskByScaling(imgPath,maskImgPath,dstImgPath,dstMaskImgPath,N=20)
+    generateMaskByScaling(imgPath,maskImgPath,dstImgPath,dstMaskImgPath,rStart=1.0,N=1)
         
     dstImgPath = newImgPath + r'\newMaskCropping\\'
     dstMaskImgPath = newImgPath + r'\newMaskCroppingMask\\'
-    generateMaskByClipping(imgPath,maskImgPath,annotPath, dstImgPath,dstMaskImgPath, N=20)
+    generateMaskByClipping(imgPath,maskImgPath,annotPath, dstImgPath,dstMaskImgPath, N=4)
 
     dstImgPath = newImgPath + r'\newMaskFlipping\\'
     dstMaskImgPath = newImgPath + r'\newMaskFlippingMask\\'

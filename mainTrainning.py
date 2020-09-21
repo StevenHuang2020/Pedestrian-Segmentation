@@ -10,7 +10,9 @@ from tensorflow.keras.layers import Input,Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras.layers import BatchNormalization,Conv2DTranspose,Concatenate
 from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.utils import plot_model
 from sklearn.model_selection import train_test_split
+
 import numpy as np
 import argparse
 import datetime
@@ -25,7 +27,7 @@ def prepareData():
     print('Y.shape=',Y.shape)
     
     X = X.reshape(X.shape[0], img_rows, img_cols, 1)
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, shuffle=False) #insure every time has same train and test dataset.
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=12) #insure every time has same train and test dataset.
         
     print('X_train.shape = ', x_train.shape)
     print('y_train.shape = ', y_train.shape)
@@ -116,8 +118,12 @@ def unet(sz = (256, 256, 1)):
                 metrics=['accuracy'])
     
     model.summary()
+    plotModel(model)
     return model
 
+def plotModel(model,dstFile=r'model.png',show_shapes=True):
+    plot_model(model, to_file=dstFile, show_shapes=show_shapes)
+    
 def argCmdParse():
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--epoch', help = 'epochs')
@@ -137,7 +143,7 @@ def main():
         epoch = int(arg.epoch)
     if arg.newModel:
          newModel = True
-         
+
     print('newModel=',newModel,'epoch=',epoch)
 
     x_train, y_train, x_test, y_test, input_shape = prepareData()

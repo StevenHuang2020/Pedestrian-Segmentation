@@ -2,7 +2,6 @@ import os,sys
 sys.path.append('..')
 #print(sys.path)
 
-import tensorflow.keras as ks
 import numpy as np
 import argparse
 from ImageBase import *
@@ -24,6 +23,8 @@ def preditImg(img, modelName = r'.\weights\trainPedSegmentation.h5'):
     model = loadModel(modelName) #ks.models.load_model(modelName,custom_objects={'dice_coef_loss': dice_coef_loss})
     #model.summary()
     print(img.shape)
+    #img = resizeImg(img,256,256)
+    assert(img.shape[0]==256 and img.shape[1]==256)
     
     x = img.reshape((-1,img.shape[0],img.shape[1],1))
     print(x.shape)
@@ -32,6 +33,9 @@ def preditImg(img, modelName = r'.\weights\trainPedSegmentation.h5'):
     print('preditImg mask.shape=',type(mask),mask.shape)
     predict = mask[0] 
     predict = predict.reshape((predict.shape[0],predict.shape[1]))
+    
+    predict = np.where(predict>0.5,1,0)
+    predict = predict.astype(np.uint8)
     return predict
 
 def processMaskImg(img,backColor=0):
@@ -69,6 +73,7 @@ def maskToOrignimalImg(img,maskImg):
     if img.shape != maskImg.shape:
         mask = expandImageTo3chan(maskImg)
 
+    print(img.shape,mask.shape)
     return cv2.addWeighted(img, 1.0, mask, 0.8, 0)
 
     H,W = getImgHW(img)
@@ -85,19 +90,16 @@ def maskToOrignimalImg(img,maskImg):
     return newImg
     
 def getPredictionMaskImg(img):
+    img = resizeImg(img,256,256)
     predMaskImg = preditImg(grayImg(img))
-    binPredMaskImg = np.where(predMaskImg>0.5,1,0)
-    binPredMaskImg = binPredMaskImg.astype(np.uint8)
-    
-    binPredMaskImg = expandImageTo3chan(binPredMaskImg)
-    binPredMaskImg = processMaskImg(binPredMaskImg)
-    binPredMaskImg = binPredMaskImg.astype(np.uint8)
-    return maskToOrignimalImg(img,binPredMaskImg)
+     
+    predMaskImg = expandImageTo3chan(predMaskImg)
+    predMaskImg = processMaskImg(predMaskImg)
+    predMaskImg = predMaskImg.astype(np.uint8)
+    return maskToOrignimalImg(img,predMaskImg)
 
 def demonstratePrediction(file,gtMaskFile=None):
     img = loadImg(file)
-    img = resizeImg(img,256,256)
-    
     pImg = getPredictionMaskImg(img)
     
     if gtMaskFile is not None:
@@ -106,7 +108,6 @@ def demonstratePrediction(file,gtMaskFile=None):
         maskImg = processMaskImg(maskImg)
         mImg = maskToOrignimalImg(img,maskImg)
     
-
     ls,nameList = [],[]
     ls.append(img),nameList.append('Original')
     if gtMaskFile is not None:
@@ -120,16 +121,14 @@ def demonstrateGrayPrediction(file):
     img = loadGrayImg(file)
     img = resizeImg(img,256,256)
     maskImg = preditImg(img)
-    bmaskImg = np.where(maskImg>0.5,1,0)
-    
+        
     c = np.unique(maskImg)
     print('c=',c)
 
     ls,nameList = [],[]
     ls.append(img),nameList.append('Original')
     ls.append(maskImg),nameList.append('PredmaskImg')
-    ls.append(bmaskImg),nameList.append('PredbmaskImg')
-
+   
     plotImagList(ls, nameList,gray=True,title='Segmentation prediction')
     
 def comparePredict():
@@ -141,7 +140,6 @@ def comparePredict():
     infoImg(gtMaskImg)
 
     predMaskImg = preditImg(img)
-    predMaskImg = np.where(predMaskImg>0.5,1,0).reshape((256,256))
     
     print('groundTrue=',gtMaskImg.shape, np.unique(gtMaskImg), np.sum(gtMaskImg))
     print('predMaskImg=',predMaskImg.shape, np.unique(predMaskImg), np.sum(predMaskImg))
