@@ -59,7 +59,7 @@ def loadDataset():
     return x,y
 
 def main():
-    #saveDataset()
+    saveDataset()
     #loadDataset()
     pass
 

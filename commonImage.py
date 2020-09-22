@@ -1,38 +1,39 @@
 import cv2
 import numpy as np
 
+'''
 def loadImg(file,mode=cv2.IMREAD_COLOR):
     #mode = cv2.IMREAD_COLOR cv2.IMREAD_GRAYSCALE cv2.IMREAD_UNCHANGED
     return cv2.imread(file,mode)
 
 def writeImg(img,filePath):
     cv2.imwrite(filePath,img)
-    
-def clipImg(img,startPt,stopPt):
-    return img[startPt[1]:stopPt[1], startPt[0]:stopPt[0]]
 
 def rectangleImg(img,startPt,stopPt):
     color = (0, 0, 255) 
     thickness=2
     image = cv2.rectangle(img, startPt, stopPt, color, thickness) 
     return image
- 
+    
 def grayImg(img):
     if getImagChannel(img) == 3:
         return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return img
-
+    
 def getImagChannel(img):
     if img.ndim == 3: #color r g b channel
         return 3
     return 1  #only one channel
-
+    
 def getImgHW(img):
     return img.shape[0],img.shape[1]  
 
 def resizeImg(img,newH,newW):
     return cv2.resize(img, (newW,newH), interpolation=cv2.INTER_CUBIC) #INTER_CUBIC INTER_NEAREST INTER_LINEAR INTER_AREA
-
+'''
+ 
+def clipImg(img,startPt,stopPt):
+    return img[startPt[1]:stopPt[1], startPt[0]:stopPt[0]]
 
 def blurImg(img,ksize=5): #Averaging adjency pixsel 5x5 size kernel
     return cv2.blur(img, (ksize,ksize))

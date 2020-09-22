@@ -8,7 +8,7 @@ import os,sys
 #----------------------------------------------
 from predictSegmentation import getPredictionMaskImg
 from modules.folder.folder_file import pathsFiles,createPath,getFileName
-from ImageBase import *
+from commonModule.ImageBase import *
     
 def cmd_line():
     # handle command line arguments

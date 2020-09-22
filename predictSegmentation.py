@@ -1,11 +1,11 @@
 import os,sys
-sys.path.append('..')
-#print(sys.path)
+#sys.path(r'./commonModule')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #close tf debug info
 
 import numpy as np
 import argparse
-from ImageBase import *
-from mainImagePlot import plotImagList
+from commonModule.ImageBase import *
+from commonModule.mainImagePlot import plotImagList
 from mainTrainning import loadModel
 #--------------------------------------------------------------------------------------
 #usgae: python predictSegmentation.py -s .\res\PennFudanPed\PNGImages\FudanPed00001.png
@@ -42,11 +42,12 @@ def processMaskImg(img,backColor=0):
     H,W = getImgHW(img)
     chn = getImagChannel(img)
     cl = np.unique(img)
-    print(cl,chn,H,W)
+    #print(cl,chn,H,W)
     #colors = np.random.uniform(0, 255, size=(len(cl), chn))
     #print('colors=', colors)
-    colors = np.array([[255,0,0],[0,255,0],[0,0,255]])
-    print('colors=', colors[0])
+    #colors = np.array([[255,0,0],[0,255,0],[0,0,255]])  #3 colors
+    colors = np.array([[0,255,0],[0,255,0],[0,255,0]])  #one colors
+    #print('colors=', colors[0])
     newImg = np.zeros_like(img)
     for i in range(H):
         for j in range(W):
@@ -100,7 +101,10 @@ def getPredictionMaskImg(img):
 
 def demonstratePrediction(file,gtMaskFile=None):
     img = loadImg(file)
-    pImg = getPredictionMaskImg(img)
+    H,W = getImgHW(img)
+    
+    pImg = getPredictionMaskImg(img.copy())
+    pImg = resizeImg(pImg,W,H) #back to orignial size
     
     if gtMaskFile is not None:
         maskImg = loadImg(gtMaskFile)
@@ -149,24 +153,45 @@ def comparePredict():
     comparison = np.sum(gtMaskImg*predMaskImg)
     print('eqaul=',comparison)
     
+def getImageMask(file,maskeFile):
+    img = loadImg(file)
+    mask = loadImg(maskeFile)
+    mask = processMaskImg(mask,backColor=0)
+    #added_image = cv2.addWeighted(background, 1.0, mask, 0.8, 0)
+    return img,mask
+    
 def testCombing():
     file = r'.\res\PennFudanPed\PNGImages\FudanPed00001.png'
     maske = r'.\res\PennFudanPed\PedMasks\FudanPed00001_mask.png'
+    crop_file = r'.\res\PennFudanPed\newImages\newMaskCropping\FudanPed00001_b_143_15_553_524.png'
+    crop_mask = r'.\res\PennFudanPed\newImages\newMaskCroppingMask\FudanPed00001_b_143_15_553_524_mask.png'
+    f_file=r'.\res\PennFudanPed\newImages\newMaskFlipping\FudanPed00001_flip.png'
+    f_mask=r'.\res\PennFudanPed\newImages\newMaskFlippingMask\FudanPed00001_flip_mask.png'
+    color_file = r'.\res\PennFudanPed\PNGImages\FudanPed00001alphaBeta_2.0_50.png'
+    color_mask = r'.\res\PennFudanPed\PedMasks\FudanPed00001alphaBeta_2.0_50_mask.png'
     
-    background = loadImg(file)
-    mask = loadImg(maske)
-    mask = processMaskImg(mask,backColor=0)
-    added_image = cv2.addWeighted(background, 1.0, mask, 0.8, 0)
+    img,mask = getImageMask(file,maske)
+    crop_img,crop_mask = getImageMask(crop_file,crop_mask)
+    f_img,f_mask = getImageMask(f_file,f_mask)
+    c_img,c_mask = getImageMask(color_file,color_mask)
     
     ls,nameList = [],[]
-    ls.append(background),nameList.append('background')
+    ls.append(img),nameList.append('Orignial')
     ls.append(mask),nameList.append('mask')
-    ls.append(added_image),nameList.append('added_image')
+    ls.append(crop_img),nameList.append('Cropping')
+    ls.append(crop_mask),nameList.append('mask')
+    ls.append(f_img),nameList.append('Flipping')
+    ls.append(f_mask),nameList.append('mask')
+    
+    ls.append(c_img),nameList.append('Color change')
+    ls.append(c_mask),nameList.append('mask')
+    #ls.append(added_image),nameList.append('added_image')
 
-    plotImagList(ls, nameList, gray=True, title='Combine')
+    plotImagList(ls, nameList, gray=True, title='', showticks=False)
     
 def main():
     #return testCombing()
+
     arg = argCmdParse()    
     file=arg.source 
     dstFile = arg.dst
@@ -176,14 +201,15 @@ def main():
         comparePredict()
     else:
         #demonstrateGrayPrediction(file)
-        file=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImage\FudanPed00001_17_104_557_490.png'
-        maskFile=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_17_104_557_490_mask.png'
-        file=r'.\res\PennFudanPed\PNGImages\FudanPed00012.png'
-        maskFile=r'.\res\PennFudanPed\PedMasks\FudanPed00012_mask.png'
+        
+        # file=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImage\FudanPed00001_17_104_557_490.png'
+        # maskFile=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_17_104_557_490_mask.png'
+        # file=r'.\res\PennFudanPed\PNGImages\FudanPed00012.png'
+        # maskFile=r'.\res\PennFudanPed\PedMasks\FudanPed00012_mask.png'
         
         #demonstratePrediction(file,maskFile)
 
-        file=r'.\res\others\2.jpg'
+        #file=r'.\res\7.jpg'
         demonstratePrediction(file)
         
     

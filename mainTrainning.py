@@ -1,5 +1,8 @@
 #python3 tensorflow 2.0  08/08/2020 
 #Segmentation U-Net model using PennFudan pedestrain dataset
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #close tf debug info
+
 import tensorflow as tf
 import tensorflow.keras as ks
 from tensorflow.keras import optimizers
@@ -18,6 +21,7 @@ import argparse
 import datetime
 
 from makeImagesDB import loadDataset
+print('Maintraining start...')
 
 def prepareData():
     img_rows, img_cols = 256,256
@@ -128,9 +132,14 @@ def argCmdParse():
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--epoch', help = 'epochs')
     parser.add_argument('-new', dest='newModel', action='store_true')
-
+    parser.add_argument('-up', dest='setLearningRate', action='store_true')
     return parser.parse_args()
 
+def updateLearningRate(model, lr=1e-4):
+    print('Orignial lr:',K.get_value(model.optimizer.lr))
+    # To set learning rate
+    K.set_value(model.optimizer.lr, lr)
+    
 def loadModel(modelName):
     return ks.models.load_model(modelName,custom_objects={'dice_coef_loss': dice_coef_loss})
 
@@ -139,12 +148,15 @@ def main():
     
     epoch = 20
     newModel = False
+    setLr = False
     if arg.epoch:
         epoch = int(arg.epoch)
     if arg.newModel:
          newModel = True
-
-    print('newModel=',newModel,'epoch=',epoch)
+    if arg.setLearningRate:
+        setLr = True
+        
+    print('newModel=',newModel,'epoch=',epoch,'setLr=',setLr)
 
     x_train, y_train, x_test, y_test, input_shape = prepareData()
     print('input_shape = ', input_shape)
@@ -154,7 +166,9 @@ def main():
         model = unet()
     else: #continue trainning
         model = loadModel(modelName) #ks.models.load_model(modelName,custom_objects={'dice_coef_loss': dice_coef_loss})
-
+        if setLr:
+            updateLearningRate(model,lr=1e-4)
+        
     log_dir = r"logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = ks.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     checkpoint_filepath = r'./checkpoint'
@@ -163,7 +177,7 @@ def main():
     #model.fit(x_train, y_train, epochs=10, callbacks = [tensorboard_callback,checkpointer])
     model.fit(x_train, y_train, epochs=epoch, 
               verbose=1, 
-              batch_size=120,
+              batch_size=160,
               validation_data=(x_test, y_test),
               #callbacks = [tensorboard_callback,checkpointer]
               callbacks = [tensorboard_callback]

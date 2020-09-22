@@ -5,16 +5,9 @@ import sys
 import cv2
 import numpy as np 
 from modules.folder.folder_file import getFileName,createPath
-from genImageBoxLabel import loadImg,getImgHW,listFile
+from genImageBoxLabel import listFile
+from commonModule.ImageBase import *
 
-def writeImg(img,filePath):
-    cv2.imwrite(filePath,img)
-
-def rectangleImg(img,startPt,stopPt):
-    color = (0, 0, 255) 
-    thickness=2
-    image = cv2.rectangle(img, startPt, stopPt, color, thickness) 
-    return image
 
 def getLabelFileLabels(fileLabel):
     labels = []
@@ -66,52 +59,6 @@ def testFileLabel(imgPath,LabelPath,dstRecImgPath):
         print(destFile)
         writeImg(recImg, destFile)
         #break
-'''
-def testImgMask():
-    def processMaskImg(img):
-        H,W = getImgHW(img)
-        chn = getImagChannel(img)
-        cl = np.unique(img)
-        print(cl)
-        colors = np.random.uniform(0, 255, size=(len(cl), chn))
-        print('colors=', colors)
-        for i in range(H):
-            for j in range(W):
-                img[i,j,:] = colors[img[i,j,0]]
-    
-    def maskToOrignimalImg(img,maskImg):
-        H,W = getImgHW(img)
-        chn = getImagChannel(img)
-        #print(img.shape,maskImg.shape)
-        cl = np.unique(maskImg)
-        colors = np.random.uniform(0, 255, size=(len(cl), chn))
-        newImg = img.copy()
-        for i in range(H):
-            for j in range(W):
-                if maskImg[i,j,0] != 0:
-                    newImg[i,j,:] = colors[maskImg[i,j,0]]
-                
-        return newImg
-    
-    
-    img = loadImg(r'./res/PennFudanPed/PNGImages/FudanPed00001.png')
-    imgMask = loadImg(r'./res/FudanPed00001_mask.png')
-    
-    H,W = getImgHW(img)
-    newH,newW = H//2, W//2    
-    img = resizeImg(img,newW,newH)
-    imgMask = resizeImg(imgMask,newW,newH)
-    
-    maskImg = maskToOrignimalImg(img,imgMask)
-    processMaskImg(imgMask)
-    
-    ls,nameList = [],[]
-    ls.append(img),nameList.append('img')
-    ls.append(imgMask),nameList.append('imgMask')
-    ls.append(maskImg),nameList.append('maskImg')
-    
-    plotImagList(ls, nameList,gray=False,title='Mask Image',showticks=False)
- '''
     
 def main():
     #base = r'.\res\PennFudanPed\trainEx\\'

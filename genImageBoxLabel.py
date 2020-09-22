@@ -5,6 +5,7 @@ import re
 import cv2
 from modules.folder.folder_file import pathsFiles,createPath,getFileName,getFmtFile
 from modules.folder.folder_file import deleteFile,deleteFolder
+from commonModule.ImageBase import *
 
 def listFile(path,fmt=''):
 	for i in pathsFiles(path,fmt):
@@ -32,7 +33,7 @@ def getFileCoordinates(fileAnnot):
                 Xmin,Ymin,Xmax,Ymax = parseCoordinate(i)
                 coordinates.append((Xmin,Ymin,Xmax,Ymax))
     return coordinates
-       
+'''       
 def loadImg(file,mode=cv2.IMREAD_COLOR):
     #mode = cv2.IMREAD_COLOR cv2.IMREAD_GRAYSCALE cv2.IMREAD_UNCHANGED
     return cv2.imread(file,mode)
@@ -44,6 +45,7 @@ def getImagChannel(img):
     if img.ndim == 3: #color r g b channel
         return 3
     return 1  #only one channel
+'''
 
 def getImgAnnotFile(annotPath,file):
     fAnnot = getFileName(file)
