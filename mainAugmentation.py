@@ -9,7 +9,7 @@ from genImageBoxLabel import getFileCoordinates,writeToAnnotFile,writeCordToAnno
 from genImageBoxLabel import loadImg,getImgHW,getImagChannel,listFile,getImgAnnotFile
 from imageColorAugPed import ImageColorAug
 from commonImage import *
-
+from commonModule.ImageBase import *
     
 def clipImgCoordinate(img,clipCoordinate,coordinates):
     clipImg = img[clipCoordinate[1]:clipCoordinate[3], clipCoordinate[0]:clipCoordinate[2]]
@@ -186,8 +186,8 @@ def main():
     imgPath = base + 'PNGImages'
     maskImgPath = base + 'PedMasks'
     
-    
     #colorAugmentation(imgPath,maskImgPath,annotPath)
+    #handleMaskLabel(maskImgPath)
     #return 
 
     newImgPath = base + 'newImages'

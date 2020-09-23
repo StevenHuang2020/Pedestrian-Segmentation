@@ -23,7 +23,7 @@ def preditImg(img, modelName = r'.\weights\trainPedSegmentation.h5'):
     model = loadModel(modelName) #ks.models.load_model(modelName,custom_objects={'dice_coef_loss': dice_coef_loss})
     #model.summary()
     print(img.shape)
-    #img = resizeImg(img,256,256)
+    img = resizeImg(img,256,256)
     assert(img.shape[0]==256 and img.shape[1]==256)
     
     x = img.reshape((-1,img.shape[0],img.shape[1],1))
@@ -69,43 +69,33 @@ def expandImageTo3chan(img):
         rimg[:,:,2] = img
     return rimg
 
-def maskToOrignimalImg(img,maskImg):
-    mask = maskImg
-    if img.shape != maskImg.shape:
-        mask = expandImageTo3chan(maskImg)
+def maskToOrignimalImg(img,mask):
+    if img.shape != mask.shape:
+        #mask = expandImageTo3chan(mask)
+        img = expandImageTo3chan(img)
 
-    print(img.shape,mask.shape)
+    #print(img.shape,mask.shape)
     return cv2.addWeighted(img, 1.0, mask, 0.8, 0)
 
-    H,W = getImgHW(img)
-    chn = getImagChannel(img)
-    #print(img.shape,maskImg.shape)
-    cl = np.unique(maskImg)
-    colors = np.random.uniform(0, 255, size=(len(cl), chn))
-    newImg = img.copy()
-    for i in range(H):
-        for j in range(W):
-            if maskImg[i,j,0] != 0:
-                newImg[i,j,:] = colors[maskImg[i,j,0]]
-            
-    return newImg
-    
 def getPredictionMaskImg(img):
-    img = resizeImg(img,256,256)
-    predMaskImg = preditImg(grayImg(img))
+    H,W = getImgHW(img)
+    blurImg = gaussianBlurImg(img.copy(),5)
+    
+    predMaskImg = preditImg(grayImg(blurImg))
      
     predMaskImg = expandImageTo3chan(predMaskImg)
     predMaskImg = processMaskImg(predMaskImg)
     predMaskImg = predMaskImg.astype(np.uint8)
-    return maskToOrignimalImg(img,predMaskImg)
+    return resizeImg(predMaskImg,W,H)
 
+def getPredictImg(img):
+    pImg = getPredictionMaskImg(img.copy())
+    return maskToOrignimalImg(img,pImg)
+  
 def demonstratePrediction(file,gtMaskFile=None):
     img = loadImg(file)
-    H,W = getImgHW(img)
     
-    pImg = getPredictionMaskImg(img.copy())
-    pImg = resizeImg(pImg,W,H) #back to orignial size
-    
+    pImg = getPredictImg(img)
     if gtMaskFile is not None:
         maskImg = loadImg(gtMaskFile)
         maskImg = resizeImg(maskImg,256,256)
@@ -117,29 +107,28 @@ def demonstratePrediction(file,gtMaskFile=None):
     if gtMaskFile is not None:
         ls.append(maskImg),nameList.append('maskImg')
         ls.append(mImg),nameList.append('GT Img')
-    ls.append(pImg),nameList.append('predict Img')
+    ls.append(pImg),nameList.append('Predict Segmentation')
 
-    plotImagList(ls, nameList,gray=True,title='Segmentation prediction',showticks=False)
+    plotImagList(ls, nameList,gray=True,showticks=False) #title='Segmentation prediction',
 
 def demonstrateGrayPrediction(file):
     img = loadGrayImg(file)
-    img = resizeImg(img,256,256)
-    maskImg = preditImg(img)
-        
-    c = np.unique(maskImg)
-    print('c=',c)
+    pImg = getPredictImg(img)
+
+    #c = np.unique(pImg)
+    #print('c=',c)
 
     ls,nameList = [],[]
     ls.append(img),nameList.append('Original')
-    ls.append(maskImg),nameList.append('PredmaskImg')
-   
+    ls.append(pImg),nameList.append('PredmaskImg')
     plotImagList(ls, nameList,gray=True,title='Segmentation prediction')
     
 def comparePredict():
-    file = r'.\res\PennFudanPed\newImages\trainImages\trainPNGImage\FudanPed00001_scale_0.2.png'
-    mask = r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_scale_0.2_mask.png'
+    file = r'.\res\PennFudanPed\PNGImages\FudanPed00001.png'
+    mask = r'.\res\PennFudanPed\PedMasks\FudanPed00001_mask.png'
     img = loadGrayImg(file)
     gtMaskImg = loadGrayImg(mask)
+    gtMaskImg = resizeImg(gtMaskImg,256,256)
     infoImg(img)
     infoImg(gtMaskImg)
 
@@ -199,9 +188,7 @@ def main():
     
     if arg.compare:
         comparePredict()
-    else:
-        #demonstrateGrayPrediction(file)
-        
+    else:        
         # file=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImage\FudanPed00001_17_104_557_490.png'
         # maskFile=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_17_104_557_490_mask.png'
         # file=r'.\res\PennFudanPed\PNGImages\FudanPed00012.png'
@@ -210,15 +197,10 @@ def main():
         #demonstratePrediction(file,maskFile)
 
         #file=r'.\res\7.jpg'
+        #demonstrateGrayPrediction(file)
         demonstratePrediction(file)
         
     
 if __name__=='__main__':
     main()
     
-    # a = np.array([[0,1,0],
-    #               [0,1,1]])
-    # b = np.array([[0,1,1],
-    #              [0,1,1]])
-    # comparison = a*b #np.where(a[np.where(a==1)] == b[np.where(b==1)])
-    # print('c=',comparison,np.sum(comparison))

@@ -1,10 +1,11 @@
 augmentate to 6968samples 
 1)mainAugmentation.py
-1.handleMaskLabel fuc
+1.colorAugmentation
+color augmentation 
+2.handleMaskLabel fuc
 change all pedestrains mask images label from(1,2,3,....) to 1
-
-2.main()
-to generate new images and maskiamges to argumentation
+3.main other function
+generate new images and maskiamges to argumentation
 
 
 2)splitImageDataset.py
