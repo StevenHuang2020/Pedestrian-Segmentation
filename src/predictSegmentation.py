@@ -1,5 +1,5 @@
 import os,sys
-#sys.path(r'./commonModule')
+sys.path.append(r'./commonModule')
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #close tf debug info
 
 import numpy as np
@@ -19,15 +19,15 @@ def argCmdParse():
     
     return parser.parse_args()
 
-def preditImg(img, modelName = r'.\weights\trainPedSegmentation.h5'): 
+def preditImg(img, modelName = r'..\weights\trainPedSegmentation.h5'): 
     model = loadModel(modelName) #ks.models.load_model(modelName,custom_objects={'dice_coef_loss': dice_coef_loss})
     #model.summary()
-    print(img.shape)
+    #print(img.shape)
     img = resizeImg(img,256,256)
     assert(img.shape[0]==256 and img.shape[1]==256)
     
     x = img.reshape((-1,img.shape[0],img.shape[1],1))
-    print(x.shape)
+    #print(x.shape)
     mask = model.predict(x)
     
     print('preditImg mask.shape=',type(mask),mask.shape)
@@ -42,7 +42,7 @@ def processMaskImg(img,backColor=0):
     H,W = getImgHW(img)
     chn = getImagChannel(img)
     cl = np.unique(img)
-    #print(cl,chn,H,W)
+    print(cl,chn,H,W)
     #colors = np.random.uniform(0, 255, size=(len(cl), chn))
     #print('colors=', colors)
     #colors = np.array([[255,0,0],[0,255,0],[0,0,255]])  #3 colors
@@ -70,6 +70,7 @@ def expandImageTo3chan(img):
     return rimg
 
 def maskToOrignimalImg(img,mask):
+    """add mask to color image"""
     if img.shape != mask.shape:
         #mask = expandImageTo3chan(mask)
         img = expandImageTo3chan(img)
@@ -79,7 +80,7 @@ def maskToOrignimalImg(img,mask):
 
 def getPredictionMaskImg(img):
     H,W = getImgHW(img)
-    blurImg = gaussianBlurImg(img.copy(),5)
+    blurImg = gaussianBlurImg(img.copy(),7)
     
     predMaskImg = preditImg(grayImg(blurImg))
      
@@ -89,31 +90,34 @@ def getPredictionMaskImg(img):
     return resizeImg(predMaskImg,W,H)
 
 def getPredictImg(img):
-    pImg = getPredictionMaskImg(img.copy())
-    return maskToOrignimalImg(img,pImg)
+    pMask = getPredictionMaskImg(img.copy())
+    return pMask, maskToOrignimalImg(img, pMask)
   
 def demonstratePrediction(file,gtMaskFile=None):
     img = loadImg(file)
+    pMask,pImg = getPredictImg(img) #prediction
     
-    pImg = getPredictImg(img)
     if gtMaskFile is not None:
         maskImg = loadImg(gtMaskFile)
-        maskImg = resizeImg(maskImg,256,256)
+        #maskImg = resizeImg(maskImg,256,256)
         maskImg = processMaskImg(maskImg)
         mImg = maskToOrignimalImg(img,maskImg)
     
     ls,nameList = [],[]
     ls.append(img),nameList.append('Original')
     if gtMaskFile is not None:
-        ls.append(maskImg),nameList.append('maskImg')
-        ls.append(mImg),nameList.append('GT Img')
+        ls.append(maskImg),nameList.append('GT mask')
+        #ls.append(mImg),nameList.append('GT Segmentation')
     ls.append(pImg),nameList.append('Predict Segmentation')
-
+    
+    if gtMaskFile is not None:
+        ls.append(pMask),nameList.append('Predict Mask')
+    
     plotImagList(ls, nameList,gray=True,showticks=False) #title='Segmentation prediction',
 
 def demonstrateGrayPrediction(file):
     img = loadGrayImg(file)
-    pImg = getPredictImg(img)
+    _,pImg = getPredictImg(img)
 
     #c = np.unique(pImg)
     #print('c=',c)
@@ -129,8 +133,8 @@ def comparePredict():
     img = loadGrayImg(file)
     gtMaskImg = loadGrayImg(mask)
     gtMaskImg = resizeImg(gtMaskImg,256,256)
-    infoImg(img)
-    infoImg(gtMaskImg)
+    #infoImg(img)
+    #infoImg(gtMaskImg)
 
     predMaskImg = preditImg(img)
     
@@ -179,8 +183,6 @@ def testCombing():
     plotImagList(ls, nameList, gray=True, title='', showticks=False)
     
 def main():
-    #return testCombing()
-
     arg = argCmdParse()    
     file=arg.source 
     dstFile = arg.dst
@@ -188,17 +190,21 @@ def main():
     
     if arg.compare:
         comparePredict()
-    else:        
-        # file=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImage\FudanPed00001_17_104_557_490.png'
-        # maskFile=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_17_104_557_490_mask.png'
-        # file=r'.\res\PennFudanPed\PNGImages\FudanPed00012.png'
-        # maskFile=r'.\res\PennFudanPed\PedMasks\FudanPed00012_mask.png'
-        
-        #demonstratePrediction(file,maskFile)
-
-        #file=r'.\res\7.jpg'
-        #demonstrateGrayPrediction(file)
-        demonstratePrediction(file)
+    else:       
+        if 0: 
+            # file=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImage\FudanPed00001_17_104_557_490.png'
+            # maskFile=r'.\res\PennFudanPed\newImages\trainImages\trainPNGImageMask\FudanPed00001_17_104_557_490_mask.png'
+            file=r'.\res\PennFudanPed\PNGImages\FudanPed00012.png'
+            maskFile=r'.\res\PennFudanPed\PedMasks\FudanPed00012_mask.png'
+            
+            file=r'.\res\PennFudanPed\PNGImages\PennPed00068.png'
+            maskFile=r'.\res\PennFudanPed\PedMasks\PennPed00068_mask.png'
+            
+            demonstratePrediction(file,maskFile)
+        else:
+            #file=r'.\res\7.jpg'
+            #demonstrateGrayPrediction(file)
+            demonstratePrediction(file)
         
     
 if __name__=='__main__':
