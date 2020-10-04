@@ -132,7 +132,7 @@ def argCmdParse():
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--epoch', help = 'epochs')
     parser.add_argument('-new', dest='newModel', action='store_true')
-    parser.add_argument('-up', dest='setLearningRate', action='store_true')
+    parser.add_argument('-lr', '--lr', help='learning rate')
     return parser.parse_args()
 
 def updateLearningRate(model, lr=1e-4):
@@ -148,15 +148,15 @@ def main():
     
     epoch = 20
     newModel = False
-    setLr = False
+    lr = 1e-5
     if arg.epoch:
         epoch = int(arg.epoch)
     if arg.newModel:
          newModel = True
-    if arg.setLearningRate:
-        setLr = True
+    if arg.lr:
+        lr = 10**int(arg.lr)
         
-    print('newModel=',newModel,'epoch=',epoch,'setLr=',setLr)
+    print('newModel=',newModel,'epoch=',epoch,'lr=',lr)
 
     x_train, y_train, x_test, y_test, input_shape = prepareData()
     print('input_shape = ', input_shape)
@@ -166,8 +166,7 @@ def main():
         model = unet()
     else: #continue trainning
         model = loadModel(modelName) #ks.models.load_model(modelName,custom_objects={'dice_coef_loss': dice_coef_loss})
-        if setLr:
-            updateLearningRate(model,lr=1e-4)
+        updateLearningRate(model,lr)
         
     log_dir = r"logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = ks.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
@@ -180,7 +179,7 @@ def main():
               batch_size=160,
               validation_data=(x_test, y_test),
               #callbacks = [tensorboard_callback,checkpointer]
-              callbacks = [tensorboard_callback]
+              #callbacks = [tensorboard_callback]
               ) #
     
     #score = model.evaluate(x_test, y_test, verbose=0)

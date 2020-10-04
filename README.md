@@ -9,9 +9,15 @@ Pedestrian segmentation tensorflow2  U-Net model.
 
 
 ## PennFudanAugmentation
+<img src="images/dataset.png" width="320" height="240" />
+Augmentation methods include resizing,cropping,flipping,color change,etc.
 
 ## Trainning
 <img src="images/Figure_1.png" width="320" height="240" />
 <img src="images/Figure_2.png" width="320" height="240" />
 
 ## SegmentationEffect
+<img src="images/Figure_4.png" width="320" height="240" />
+<img src="images/Figure_5.png" width="320" height="240" />
+<img src="images/predict1.png" width="320" height="240" />
+<img src="images/predict2.png" width="320" height="240" />

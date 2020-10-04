@@ -80,7 +80,7 @@ def maskToOrignimalImg(img,mask):
 
 def getPredictionMaskImg(img):
     H,W = getImgHW(img)
-    blurImg = gaussianBlurImg(img.copy(),7)
+    blurImg = gaussianBlurImg(img.copy(),3)
     
     predMaskImg = preditImg(grayImg(blurImg))
      
