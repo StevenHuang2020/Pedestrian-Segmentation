@@ -13,5 +13,3 @@ Augmentation methods include resizing,cropping,flipping,color change,etc.
 ## SegmentationEffect
 <img src="images/Figure_4.png" width="320" height="240" />
 <img src="images/Figure_5.png" width="320" height="240" />
-<img src="images/predict1.png" width="320" height="240" />
-<img src="images/predict2.png" width="320" height="240" />
