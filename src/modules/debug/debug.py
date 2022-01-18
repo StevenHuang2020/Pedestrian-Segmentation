@@ -1,5 +1,6 @@
 import sys
 
+
 def get_cur_info(str=None):
     #print(sys._getframe().f_back)
 
@@ -12,12 +13,14 @@ def get_cur_info(str=None):
     if str:
         print(str)
 
+
 class __LINE__(object):
     def __repr__(self):
         try:
             raise Exception
         except:
             return str(sys.exc_info()[2].tb_frame.f_back.f_lineno)
+
 
 class __FILE__(object):
     def __repr__(self):
@@ -27,6 +30,7 @@ class __FILE__(object):
             #return str(sys.exc_info()[2].tb_frame.f_code.co_filename)
             return sys._getframe(1).f_code.co_filename
 
+
 if __name__ == '__main__':
     #get_cur_info('hhh')
     line = __LINE__()
@@ -34,4 +38,3 @@ if __name__ == '__main__':
     #print('line:',line)
     #print('file:',file,'line:',line)
     print(__FILE__(),__LINE__())
-
